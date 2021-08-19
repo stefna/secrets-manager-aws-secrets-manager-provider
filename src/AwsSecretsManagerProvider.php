@@ -24,6 +24,9 @@ final class AwsSecretsManagerProvider implements ProviderInterface
 	{
 		$options['SecretId'] = $secret->getKey();
 		$options['SecretString'] = json_encode($secret->getValue());
+		if (!isset($options['ClientRequestToken'])) {
+			$options['ClientRequestToken'] = base64_encode(random_bytes(32));
+		}
 
 		try {
 			$this->client->updateSecret($options);

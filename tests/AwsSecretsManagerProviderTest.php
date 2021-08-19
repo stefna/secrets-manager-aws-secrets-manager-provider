@@ -187,4 +187,30 @@ final class AwsSecretsManagerProviderTest extends TestCase
 		$secret2 = $provider->getSecret($key);
 		$this->assertSame($secret, $secret2);
 	}
+
+	public function testPutSecretGeneratesClientRequestToken(): void
+	{
+		$testValue = 'value';
+		$testKey = 'test-key';
+		$client = $this->getMockBuilder(SecretsManagerClient::class)
+			->disableOriginalConstructor()
+			->onlyMethods(['updateSecret'])
+			->getMock();
+
+		$result = ResultMockFactory::create(UpdateSecretResponse::class, [
+			'ARN' => "arn:aws:secretsmanager:us-west-2:123456789012:secret:$testKey-a1b2c3",
+			'Name' => $testKey,
+			'VersionId' => 'EXAMPLE1-90ab-cdef-fedc-ba987SECRET1',
+		]);
+		$client
+			->expects($this->once())
+			->method('updateSecret')
+			->with($this->callback(function (array $args) {
+				return isset($args['ClientRequestToken']);
+			}))->willReturn($result);
+
+		$provider = new AwsSecretsManagerProvider($client);
+
+		$provider->putSecret(new Secret($testKey, $testValue));
+	}
 }
