@@ -26,10 +26,12 @@ final class AwsSecretsManagerProvider implements ProviderInterface
 		}
 
 		try {
+			// @phpstan-ignore-next-line - stan is just plain wrong on this
 			$this->client->updateSecret($options);
 		}
 		catch (ResourceNotFoundException $e) {
 			$options['Name'] = $secret->getKey();
+			// @phpstan-ignore-next-line - stan is just plain wrong on this
 			$this->client->createSecret($options);
 		}
 
