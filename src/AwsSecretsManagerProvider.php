@@ -10,15 +10,12 @@ use Stefna\SecretsManager\Values\Secret;
 
 final class AwsSecretsManagerProvider implements ProviderInterface
 {
-	/** @var SecretsManagerClient */
-	private $client;
 	/** @var array<string, Secret> */
-	private $data = [];
+	private array $data = [];
 
-	public function __construct(SecretsManagerClient $client)
-	{
-		$this->client = $client;
-	}
+	public function __construct(
+		private readonly SecretsManagerClient $client,
+	) {}
 
 	public function putSecret(Secret $secret, ?array $options = []): Secret
 	{
@@ -30,7 +27,8 @@ final class AwsSecretsManagerProvider implements ProviderInterface
 
 		try {
 			$this->client->updateSecret($options);
-		} catch (ResourceNotFoundException $e) {
+		}
+		catch (ResourceNotFoundException $e) {
 			$options['Name'] = $secret->getKey();
 			$this->client->createSecret($options);
 		}
